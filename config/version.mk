@@ -1,45 +1,38 @@
-PRODUCT_VERSION_MAJOR = 23
-PRODUCT_VERSION_MINOR = 0
+# CincaiAndroid versioning
 
-ifeq ($(LINEAGE_VERSION_APPEND_TIME_OF_DAY),true)
-    LINEAGE_BUILD_DATE := $(shell date -u +%Y%m%d_%H%M%S)
-else
-    LINEAGE_BUILD_DATE := $(shell date -u +%Y%m%d)
-endif
+# Major / Minor base
+PRODUCT_VERSION_MAJOR := 23
+PRODUCT_VERSION_MINOR := 0
+PLATFORM := 16
 
-# Set LINEAGE_BUILDTYPE from the env RELEASE_TYPE, for jenkins compat
+# Extra build tag (date)
+CINCAI_BUILD_DATE := $(shell date +%Y%m%d)
 
-ifndef LINEAGE_BUILDTYPE
-    ifdef RELEASE_TYPE
-        # Starting with "LINEAGE_" is optional
-        RELEASE_TYPE := $(shell echo $(RELEASE_TYPE) | sed -e 's|^LINEAGE_||g')
-        LINEAGE_BUILDTYPE := $(RELEASE_TYPE)
-    endif
-endif
+# Internal cincai version
+# CINCAI_VERSION := cincaiAndroid-$(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR)-$(CINCAI_BUILD_DATE) #original line
+# CINCAI_VERSION := cincaiAndroid-$(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR)-$(LINEAGE_BUILD)-$(CINCAI_BUILD_DATE)
+CINCAI_VERSION := cincaiAndroid_$(CINCAI_BUILD)-v$(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR)@ANDROID-$(PLATFORM)-$(CINCAI_BUILD_DATE)
 
-# Filter out random types, so it'll reset to UNOFFICIAL
-ifeq ($(filter RELEASE NIGHTLY SNAPSHOT EXPERIMENTAL,$(LINEAGE_BUILDTYPE)),)
-    LINEAGE_BUILDTYPE := UNOFFICIAL
-    LINEAGE_EXTRAVERSION :=
-endif
+# Display version (what user sees)
+# CINCAI_DISPLAY_VERSION := v$(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR)-$(CINCAI_BUILD_DATE) #original line
+# CINCAI_DISPLAY_VERSION := v$(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR)-$(LINEAGE_BUILD)-$(CINCAI_BUILD_DATE)
+CINCAI_DISPLAY_VERSION := $(CINCAI_BUILD)_v$(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR)-$(CINCAI_BUILD_DATE)
 
-ifeq ($(LINEAGE_BUILDTYPE), UNOFFICIAL)
-    ifneq ($(TARGET_UNOFFICIAL_BUILD_ID),)
-        LINEAGE_EXTRAVERSION := -$(TARGET_UNOFFICIAL_BUILD_ID)
-    endif
-endif
+# Legacy Lineage variable (to keep Updater/Settings happy)
+LINEAGE_VERSION := $(CINCAI_VERSION)
+LINEAGE_DISPLAY_VERSION := $(CINCAI_DISPLAY_VERSION)
 
-LINEAGE_VERSION_SUFFIX := $(LINEAGE_BUILD_DATE)-$(LINEAGE_BUILDTYPE)$(LINEAGE_EXTRAVERSION)-$(LINEAGE_BUILD)
-
-# Internal version
-LINEAGE_VERSION := $(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR)-$(LINEAGE_VERSION_SUFFIX)
-
-# Display version
-LINEAGE_DISPLAY_VERSION := $(PRODUCT_VERSION_MAJOR)-$(LINEAGE_VERSION_SUFFIX)
-
-# LineageOS version properties
+# System properties baked into build.prop
 PRODUCT_SYSTEM_PROPERTIES += \
+    ro.cincai.version=$(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR) \
+    ro.cincai.display.version=$(CINCAI_DISPLAY_VERSION) \
+    ro.cincai.build.version=$(CINCAI_VERSION) \
     ro.lineage.version=$(LINEAGE_VERSION) \
-    ro.lineage.display.version=$(LINEAGE_DISPLAY_VERSION) \
-    ro.lineage.build.version=$(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR) \
-    ro.lineage.releasetype=$(LINEAGE_BUILDTYPE)
+    ro.lineage.display.version=$(LINEAGE_DISPLAY_VERSION)
+
+# version information in recovery miniui --fix applied 20251122
+PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
+    ro.build.version.release=16 \
+    ro.lineage.build.version=$(CINCAI_DISPLAY_VERSION) \
+    ro.modversion=$(CINCAI_DISPLAY_VERSION)
+

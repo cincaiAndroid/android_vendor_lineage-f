@@ -83,7 +83,7 @@ PRODUCT_PACKAGES += \
 
 # Legal
 PRODUCT_SYSTEM_PROPERTIES += \
-    ro.lineagelegal.url=https://lineageos.org/legal
+    ro.lineagelegal.url=https://github.com/cincaiAndroid/legal_public/blob/main/cincai-kad-disclaimer.mkdn
 
 # Media
 PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
