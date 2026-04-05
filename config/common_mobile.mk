@@ -72,14 +72,14 @@ PRODUCT_PACKAGES += \
     IconPackVictorAndroidOverlay \
     IconPackVictorLauncherOverlay \
     IconPackVictorSettingsOverlay \
-    IconPackVictorSystemUIOverlay \
-    IconShapePebbleOverlay \
-    IconShapeRoundedRectOverlay \
-    IconShapeSquareOverlay \
-    IconShapeSquircleOverlay \
-    IconShapeTaperedRectOverlay \
-    IconShapeTeardropOverlay \
-    IconShapeVesselOverlay
+    IconPackVictorSystemUIOverlay 
+#    IconShapePebbleOverlay \
+#    IconShapeRoundedRectOverlay \
+#    IconShapeSquareOverlay \
+#    IconShapeSquircleOverlay \
+#    IconShapeTaperedRectOverlay \
+#    IconShapeTeardropOverlay \
+#    IconShapeVesselOverlay
 
 # Legal
 PRODUCT_SYSTEM_PROPERTIES += \
