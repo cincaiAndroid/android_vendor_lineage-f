@@ -562,7 +562,7 @@ $(TARGET_PREBUILT_INT_KERNEL): $(KERNEL_CONFIG) $(DEPMOD) $(DTC) $(KERNEL_MODULE
 			filtered_modules=""; \
 			$(if $(SYSTEM_KERNEL_MODULES),\
 				$(if $(filter true,$(TARGET_AUTO_COLLECT_KERNEL_MODULE_DEPS)), \
-					gki_kernel_modules_deps=$$($(COLLECT_MODULE_DEPS_CMD) $(KERNEL_OUT) $(SYSTEM_KERNEL_MODULES) | tr '\n' ' '); \
+					gki_kernel_modules_deps=$$($(COLLECT_MODULE_DEPS_CMD) $$kernel_modules_dir $(SYSTEM_KERNEL_MODULES) | tr '\n' ' '); \
 				) \
 				gki_modules=$$(for m in $(SYSTEM_KERNEL_MODULES) $$gki_kernel_modules_deps; do \
 					p=$$(echo $$all_modules | tr ' ' '\n' | grep /$$m); \
@@ -587,10 +587,10 @@ $(TARGET_PREBUILT_INT_KERNEL): $(KERNEL_CONFIG) $(DEPMOD) $(DTC) $(KERNEL_MODULE
 			) \
 			$(if $(BOOT_KERNEL_MODULES)$(BOOT_KERNEL_MODULES_FINDER),\
 				$(if $(BOOT_KERNEL_MODULES_FINDER), \
-					boot_kernel_modules_finder_output=$$($(BOOT_KERNEL_MODULES_FINDER) $(KERNEL_OUT) | tr '\n' ' '); \
+					boot_kernel_modules_finder_output=$$($(BOOT_KERNEL_MODULES_FINDER) $$kernel_modules_dir | tr '\n' ' '); \
 				) \
 				$(if $(filter true,$(TARGET_AUTO_COLLECT_KERNEL_MODULE_DEPS)), \
-					boot_kernel_modules_deps=$$($(COLLECT_MODULE_DEPS_CMD) $(KERNEL_OUT) $(BOOT_KERNEL_MODULES) $$boot_kernel_modules_finder_output | tr '\n' ' '); \
+					boot_kernel_modules_deps=$$($(COLLECT_MODULE_DEPS_CMD) $$kernel_modules_dir $(BOOT_KERNEL_MODULES) $$boot_kernel_modules_finder_output | tr '\n' ' '); \
 				) \
 				vendor_boot_modules=$$(for m in $(BOOT_KERNEL_MODULES) $$boot_kernel_modules_deps $$boot_kernel_modules_finder_output; do \
 					p=$$(echo $$all_modules | tr ' ' '\n' | grep /$$m); \
@@ -601,10 +601,10 @@ $(TARGET_PREBUILT_INT_KERNEL): $(KERNEL_CONFIG) $(DEPMOD) $(DTC) $(KERNEL_MODULE
 			) \
 			$(if $(RECOVERY_KERNEL_MODULES)$(RECOVERY_KERNEL_MODULES_FINDER),\
 				$(if $(RECOVERY_KERNEL_MODULES_FINDER), \
-					recovery_kernel_modules_finder_output=$$($(RECOVERY_KERNEL_MODULES_FINDER) $(KERNEL_OUT) | tr '\n' ' '); \
+					recovery_kernel_modules_finder_output=$$($(RECOVERY_KERNEL_MODULES_FINDER) $$kernel_modules_dir | tr '\n' ' '); \
 				) \
 				$(if $(filter true,$(TARGET_AUTO_COLLECT_KERNEL_MODULE_DEPS)), \
-					recovery_kernel_modules_deps=$$($(COLLECT_MODULE_DEPS_CMD) $(KERNEL_OUT) $(RECOVERY_KERNEL_MODULES) $$recovery_kernel_modules_finder_output | tr '\n' ' '); \
+					recovery_kernel_modules_deps=$$($(COLLECT_MODULE_DEPS_CMD) $$kernel_modules_dir $(RECOVERY_KERNEL_MODULES) $$recovery_kernel_modules_finder_output | tr '\n' ' '); \
 				) \
 				recovery_modules=$$(for m in $(RECOVERY_KERNEL_MODULES) $$recovery_kernel_modules_finder_output $$recovery_kernel_modules_deps; do \
 					p=$$(echo $$all_modules | tr ' ' '\n' | grep /$$m); \
@@ -752,7 +752,7 @@ KERNEL_PATH := $(abspath $(BUILD_TOP)/kernel/platform/kernel-$(TARGET_KERNEL_VER
 $(TARGET_PREBUILT_INT_KERNEL): $(DEPMOD) $(KERNEL_MODULES_PARTITION_FILE_LIST) $(SYSTEM_KERNEL_MODULES_PARTITION_FILE_LIST)
 	@echo "Building $(BOARD_KERNEL_IMAGE_NAME)"
 	@mkdir -p $(KERNEL_OUT)
-	$(hide) cd $(KERNEL_PATH) && python3 .repo/repo/repo manifest -o - -r > $(abspath $(KERNEL_OUT))/manifest.xml
+	$(hide) cd $(KERNEL_PATH) && python3 $(BUILD_TOP)/.repo/repo/repo manifest -o - -r |sed '/^  <project.*\/>$$/{/kernel\/platform\/kernel-$(TARGET_KERNEL_VERSION)/!d;}' |sed '/^  <project/,/  <\/project>/{/kernel\/platform\/kernel-$(TARGET_KERNEL_VERSION)/!d;}' |sed 's|kernel/platform/kernel-$(TARGET_KERNEL_VERSION)/||' > $(abspath $(KERNEL_OUT))/manifest.xml
 	$(hide) cd $(KERNEL_PATH) && ./tools/bazel --output_user_root=$(abspath $(KERNEL_OUT)/bazel-out) --output_root=$(abspath $(KERNEL_OUT)/bazel-out) run --experimental_convenience_symlinks=ignore --cpu=$(KERNEL_ARCH) --repo_manifest $(abspath $(KERNEL_PATH)):$(abspath $(KERNEL_OUT)/manifest.xml) --config=stamp //$(KERNEL_SRC):$(TARGET_KERNEL_PLATFORM_TARGET)_dist -- --destdir=$(abspath $(KERNEL_OUT))
 	$(if $(BOOT_KERNEL_MODULES),\
 		$(call build-image-kernel-modules-lineage,$(addprefix $(KERNEL_OUT)/,$(BOOT_KERNEL_MODULES)),$(KERNEL_VENDOR_RAMDISK_MODULES_OUT),,$(KERNEL_VENDOR_RAMDISK_DEPMOD_STAGING_DIR),$(KERNEL_VENDOR_RAMDISK_KERNEL_MODULES_LOAD),,,)\
